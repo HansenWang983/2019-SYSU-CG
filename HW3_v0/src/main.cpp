@@ -145,6 +145,8 @@ int main()
     // control variables in render loop 
     ImVec4 clear_color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
     int choice = 0;
+    // default radius 
+    int curr_radius = radius;
 
     // render loop
     // -----------
@@ -175,6 +177,18 @@ int main()
                 break;
             case 2:
                 ImGui::Text("A circle will be drawn.");
+                ImGui::InputInt("Radius", &curr_radius);
+                if(curr_radius != radius){
+                    circleData.clear();
+                    circleData = genCirclePositions(centre,curr_radius);
+                    radius = curr_radius;
+                    for (int i = 0; i < circleData.size(); i = i + 3) {
+                        circleData[i] = 2 * circleData[i] / SCR_WIDTH;
+                        circleData[i + 1] = 2 * circleData[i + 1] / SCR_HEIGHT;
+                    }
+                    // bind the VAO, VBO with points
+                    PointsBindVAO(VAO[1],VBO[1],circleData);
+                }
                 break;
             default:
                 break;
