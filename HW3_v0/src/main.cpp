@@ -80,37 +80,56 @@ int main()
 
     // three 2D integer points
     float vertices1[]={
-        -60.0,-80.0,
-        160.0,140.0,
-        160.0,-80.0
+        -50.0,0.0,
+        -350.0,150.0,
+        -150.0,-200.0
     };
-    
-    // draw a triangle with Bresenham's algorithm
-    auto data = genTrianglePositions(
+    float vertices2[]={
+        50.0,0.0,
+        350.0,150.0,
+        150.0,-200.0
+    };
+
+    bool isFilled = false;
+    // draw 2 triangles with Bresenham's algorithm
+    auto triData1 = genTrianglePositions(
         Point(vertices1[0],vertices1[1]),
         Point(vertices1[2],vertices1[3]),
-        Point(vertices1[4],vertices1[5])
+        Point(vertices1[4],vertices1[5]),
+        isFilled
+    );
+
+    auto triData2 = genTrianglePositions(
+        Point(vertices2[0],vertices2[1]),
+        Point(vertices2[2],vertices2[3]),
+        Point(vertices2[4],vertices2[5]),
+        isFilled
     );
 
     // convert screen coordiante to gl coordinate
-    for (int i = 0; i < data.size(); i = i + 3) {
-        data[i] = 2 * data[i] / SCR_WIDTH;
-        data[i + 1] = 2 * data[i + 1] / SCR_HEIGHT;
+    for (int i = 0; i < triData1.size(); i = i + 3) {
+        triData1[i] = 2 * triData1[i] / SCR_WIDTH;
+        triData1[i + 1] = 2 * triData1[i + 1] / SCR_HEIGHT;
+    }
+    for (int i = 0; i < triData2.size(); i = i + 3) {
+        triData2[i] = 2 * triData2[i] / SCR_WIDTH;
+        triData2[i + 1] = 2 * triData2[i + 1] / SCR_HEIGHT;
     }
 
+    triData1.insert(triData1.end(),triData2.begin(),triData2.end());
     // bind the VAO, VBO with points
-    PointsBindVAO(VAO[0],VBO[0],data);
+    PointsBindVAO(VAO[0],VBO[0],triData1);
 
     // for debugging
-    // cout << data[0] <<endl;
-    // cout << data[1] <<endl;
-    // cout << data[3] <<endl;
-    // cout << data[4] <<endl;
-    // cout << data[6] <<endl;
-    // cout << data[7] <<endl;
-    // cout << data[9] <<endl;
-    // cout << data[10] <<endl;
-    // cout<<data.size()<<endl;
+    // cout << triData1[0] <<endl;
+    // cout << triData1[1] <<endl;
+    // cout << triData1[3] <<endl;
+    // cout << triData1[4] <<endl;
+    // cout << triData1[6] <<endl;
+    // cout << triData1[7] <<endl;
+    // cout << triData1[9] <<endl;
+    // cout << triData1[10] <<endl;
+    // cout<<triData1.size()<<endl;
 
     // draw the circle with Bresenham's algorithm
     // centre 
@@ -147,6 +166,8 @@ int main()
     int choice = 0;
     // default radius 
     int curr_radius = radius;
+    // for rasterization
+    bool isChecked = isFilled;
 
     // render loop
     // -----------
@@ -174,6 +195,35 @@ int main()
         switch (choice) {
             case 1:
                 ImGui::Text("A triangle will be drawn.");
+                ImGui::Checkbox("Is Filled", &isChecked);
+                if(isChecked != isFilled){
+                    triData1.clear();
+                    triData1 = genTrianglePositions(
+                        Point(vertices1[0],vertices1[1]),
+                        Point(vertices1[2],vertices1[3]),
+                        Point(vertices1[4],vertices1[5]),
+                        isChecked
+                    );
+                    triData2 = genTrianglePositions(
+                        Point(vertices2[0],vertices2[1]),
+                        Point(vertices2[2],vertices2[3]),
+                        Point(vertices2[4],vertices2[5]),
+                        isChecked
+                    );
+                    // convert screen coordiante to gl coordinate
+                    for (int i = 0; i < triData1.size(); i = i + 3) {
+                        triData1[i] = 2 * triData1[i] / SCR_WIDTH;
+                        triData1[i + 1] = 2 * triData1[i + 1] / SCR_HEIGHT;
+                    }
+                    for (int i = 0; i < triData2.size(); i = i + 3) {
+                        triData2[i] = 2 * triData2[i] / SCR_WIDTH;
+                        triData2[i + 1] = 2 * triData2[i + 1] / SCR_HEIGHT;
+                    }
+                    triData1.insert(triData1.end(),triData2.begin(),triData2.end());
+                    // bind the VAO, VBO with points
+                    PointsBindVAO(VAO[0],VBO[0],triData1);
+                    isFilled = isChecked;
+                }
                 break;
             case 2:
                 ImGui::Text("A circle will be drawn.");
@@ -207,7 +257,7 @@ int main()
         switch (choice) {
             case 1:
                 glBindVertexArray(VAO[0]);
-                glDrawArrays(GL_POINTS, 0, int(data.size()) / 3);
+                glDrawArrays(GL_POINTS, 0, int(triData1.size()) / 3);
                 break;
             case 2:
                 glBindVertexArray(VAO[1]);

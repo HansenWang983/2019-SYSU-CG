@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 using namespace std;
@@ -26,6 +27,10 @@ struct Point {
         y = p.y;
     }
     Point(float _x, float _y) : x(_x), y(_y) {}
+};
+
+struct bbox{
+    int xmin, xmax, ymin, ymax;
 };
 
 void PointsBindVAO(GLuint& VAO,GLuint& VBO,vector<float>& data){
@@ -56,6 +61,82 @@ vector<float> points2floats3d(const vector<Point> &pv){
         data[index+2] = 0.0f;
         index += 3;
     }
+    return data;
+}
+
+
+float min3(const float& a, const float& b, const float& c) {
+    return min(a,min(b, c));
+}
+
+float max3(const float& a, const float& b, const float& c) {
+    return max(a,max(b, c));
+}
+
+void bound3(const Point& v0,const Point& v1,const Point& v2,bbox &b){
+    b.xmin = ceil(min3(v0.x, v1.x, v2.x));
+    b.xmax = ceil(max3(v0.x, v1.x, v2.x));
+    b.ymin = ceil(min3(v0.y, v1.y, v2.y));
+    b.ymax = ceil(max3(v0.y, v1.y, v2.y));
+}
+
+// find the linear equation in the form of Ax + By + C = 0
+vector<float> getLinearEquation(const Point& v0,const Point& v1){
+    vector<float> cv;
+    // A
+    cv.push_back(v0.y - v1.y);
+    // B
+    cv.push_back(v1.x - v0.x);
+    // C
+    cv.push_back(v0.x * v1.y - v1.x * v0.y);
+    
+    // cout << cv[0] << " " << cv[1] << " " << cv[2] <<endl;
+    return cv;
+}
+
+float deterValue(const vector<float>& line,const Point& p){
+    return line[0] * p.x + line[1] * p.y + line[2];
+}
+
+vector<float> rasterize(const Point& v0,const Point& v1,const Point& v2){
+    vector<Point> pv;
+    bbox b;
+    bound3(v0,v1,v2,b);
+    
+    // get 3 lines paras
+    vector<vector<float>> lines;
+    lines.push_back(getLinearEquation(v0,v1));
+    lines.push_back(getLinearEquation(v0,v2));
+    lines.push_back(getLinearEquation(v1,v2));
+    
+    // orient edge equations
+    // let negative halfspaces be on the triangle's exterior
+    int flags[3];
+    // determine the value of v2 on line v0v1
+    flags[0] = (deterValue(lines[0], v2) > 0)? 1 : -1;
+    // determine the value of v1 on line v0v2
+    flags[1] = (deterValue(lines[1], v1) > 0)? 1 : -1;
+    // determine the value of v0 on line v1v2
+    flags[2] = (deterValue(lines[2], v0) > 0)? 1 : -1;
+
+    // cout << flags[0] << flags[1] << flags[2] << endl;
+    // for each pixel in b
+    for(int y=b.ymin; y<b.ymax; y++){
+        for(int x=b.xmin; x<b.xmax; x++){
+            bool inside = true;
+            // for each line of triangle
+            for (int i = 0; i < lines.size(); i++) {
+                if ((lines[i][0] * x + lines[i][1] * y + lines[i][2]) * flags[i] < 0) {
+                    inside = false;
+                    break;
+                }
+            }
+            if(inside){
+                pv.push_back(Point(x,y));
+            }
+        }
+    }
+    auto data = points2floats3d(pv);
     return data;
 }
 
@@ -140,13 +221,19 @@ vector<float> genLinePositions(Point v0,Point v1){
     return data;
 }
 
-vector<float> genTrianglePositions(Point v0,Point v1,Point v2){
+vector<float> genTrianglePositions(Point v0,Point v1,Point v2,bool isFilled){
     auto data1 = genLinePositions(v0,v1);
     auto data2 = genLinePositions(v1,v2);
     auto data3 = genLinePositions(v0,v2);
 
     data1.insert(data1.end(),data2.begin(),data2.end());
     data1.insert(data1.end(),data3.begin(),data3.end());
+
+    if(isFilled){
+        auto filledData = rasterize(v0,v1,v2);
+        data1.insert(data1.end(),filledData.begin(),filledData.end());
+    }
+
     return data1;
 }
 
@@ -183,5 +270,6 @@ vector<float> genCirclePositions(Point centre,int radius){
     auto data = points2floats3d(pv);
     return data;
 }
+
 
 #endif /* Utilities_h */
