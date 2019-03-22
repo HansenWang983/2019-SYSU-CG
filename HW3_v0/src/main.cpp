@@ -195,7 +195,7 @@ int main()
         switch (choice) {
             case 1:
                 ImGui::Text("A triangle will be drawn.");
-                ImGui::Checkbox("Is Filled", &isChecked);
+                ImGui::Checkbox("Filled with color", &isChecked);
                 if(isChecked != isFilled){
                     triData1.clear();
                     triData1 = genTrianglePositions(
