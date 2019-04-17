@@ -15,3 +15,16 @@
 - Draw circle
 - Bresenham's algorithm
 - Triangle rasterization
+
+## Homework 4
+
+- Transformation
+- GLM 
+- Translation Rotation Scaling
+
+## Homework 5
+
+- Camera
+- perspective projection
+- orthographic projection
+- FPS 
