@@ -28,3 +28,9 @@
 - perspective projection
 - orthographic projection
 - FPS 
+
+## Homework 6
+
+- Phong Illumination model
+- Phong Shading 
+- Gouraud Shading
