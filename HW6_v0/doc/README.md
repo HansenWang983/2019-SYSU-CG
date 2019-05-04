@@ -2,6 +2,8 @@
 
 # Homework 6 - Lights and Shading
 
+**src/ 地址：**<https://github.com/hansenbeast/2019-SYSU-CG/tree/master/HW6_v0/src>
+
 ## 效果展示
 
 见 doc/demo.mov
