@@ -34,3 +34,8 @@
 - Phong Illumination model
 - Phong Shading 
 - Gouraud Shading
+
+## Homework 7
+
+- Shadowing Mapping
+- PCF（percentage-closer ﬁltering）
