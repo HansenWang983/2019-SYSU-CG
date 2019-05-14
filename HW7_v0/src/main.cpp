@@ -349,11 +349,12 @@ int main()
         // -------------------------------------------
         // 1. Render depth of scene to texture (from light's perspective)
         // - Get light projection/view matrix.
-        glCullFace(GL_FRONT);
+//        glEnable(GL_CULL_FACE);
+//        glCullFace(GL_FRONT);
         
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
-        GLfloat near_plane = 1.0f, far_plane = 100.0f;
+        GLfloat near_plane = 1.0f, far_plane = 30.0f;
         if (choice == 1) {
             // Orthographic 
             lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -371,10 +372,13 @@ int main()
         glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
+        
         RenderScene(simpleDepthShader);
+        
+//        glCullFace(GL_BACK);
+//        glDisable(GL_CULL_FACE);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glCullFace(GL_BACK);
         // reset viewport
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
