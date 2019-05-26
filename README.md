@@ -39,3 +39,7 @@
 
 - Shadowing Mapping
 - PCF（percentage-closer ﬁltering）
+
+## Homework 8
+
+- Bezier Curve
